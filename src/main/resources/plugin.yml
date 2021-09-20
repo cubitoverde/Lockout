@@ -1,0 +1,11 @@
+name: Lockout
+version: 1.0
+load: POSTWORLD
+author: cubito_verde
+main: com.gmail.cubitverde.Lockout.Lockout
+prefix: Lockout
+api-version: 1.16
+
+commands:
+  lockout:
+    permission: lockout.admin
