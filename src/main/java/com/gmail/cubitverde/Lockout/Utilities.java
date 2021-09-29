@@ -117,4 +117,28 @@ public class Utilities {
         return string;
     }
 
+    static int ReadTime(String string) {
+        int length = string.length();
+
+        int time;
+        try {
+            time = Integer.parseInt(string.substring(0, length - 1));
+        } catch (Exception e) {
+            return -1;
+        }
+
+        if (string.charAt(length - 1) == 'h' || string.charAt(length - 1) == 'm' || string.charAt(length - 1) == 's') {
+            switch (string.charAt(length - 1)) {
+                case 'h':
+                    time *= 60;
+                case 'm':
+                    time *= 60;
+                case 's':
+                    return time;
+            }
+        }
+
+        return -1;
+    }
+
 }

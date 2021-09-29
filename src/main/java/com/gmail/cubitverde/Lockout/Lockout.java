@@ -25,7 +25,7 @@ public class Lockout extends JavaPlugin {
             return true;
         }
 
-        switch (args[0]) {
+        switch (args[0].toLowerCase()) {
             case "new": {
                 Commands.CommandNew(sender, args);
             }
@@ -37,6 +37,18 @@ public class Lockout extends JavaPlugin {
             }
             case "info": {
                 Commands.CommandInfo(sender, args);
+            }
+            case "time": {
+                Commands.CommandTime(sender, args);
+            }
+            case "attempts": {
+                Commands.CommandAttempts(sender, args);
+            }
+            case "setlobby": {
+                Commands.CommandSetlobby(sender, args);
+            }
+            case "setstart": {
+                Commands.CommandSetstart(sender, args);
             }
             default: {
                 Utilities.ShowCommands(sender);
