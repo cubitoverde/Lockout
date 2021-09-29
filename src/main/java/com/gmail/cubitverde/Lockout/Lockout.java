@@ -20,6 +20,28 @@ public class Lockout extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (args == null || args.length < 1) {
+            Utilities.ShowCommands(sender);
+            return true;
+        }
+
+        switch (args[0]) {
+            case "new": {
+                Commands.CommandNew(sender, args);
+            }
+            case "delete": {
+                Commands.CommandDelete(sender, args);
+            }
+            case "list": {
+                Commands.CommandList(sender);
+            }
+            case "info": {
+                Commands.CommandInfo(sender, args);
+            }
+            default: {
+                Utilities.ShowCommands(sender);
+            }
+        }
 
         return true;
     }
