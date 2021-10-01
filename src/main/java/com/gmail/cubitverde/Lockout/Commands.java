@@ -18,6 +18,7 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (!Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is already a course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
         Course course = Utilities.NewCourse(name);
         Utilities.SaveCourse(course);
@@ -33,6 +34,7 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
         Utilities.DeleteCourse(name);
         sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] The course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + " has been deleted.");
@@ -45,7 +47,6 @@ public class Commands {
         for (String name : list) {
             sender.sendMessage(ChatColor.DARK_GREEN + " - " + ChatColor.GREEN + name);
         }
-
     }
 
     static void CommandInfo(CommandSender sender, String[] args) {
@@ -57,15 +58,24 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
 
         Course course = Utilities.GetCourse(name);
         sender.sendMessage(" ");
         sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Information for course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ":");
         Location start = course.getStart();
-        sender.sendMessage(ChatColor.DARK_GREEN + " - Start location: " + start.getBlockX() + " " + start.getBlockY() + " " + start.getBlockZ());
+        if (start == null) {
+            sender.sendMessage(ChatColor.DARK_GREEN + " - Start location: Not set");
+        } else {
+            sender.sendMessage(ChatColor.DARK_GREEN + " - Start location: " + start.getBlockX() + " " + start.getBlockY() + " " + start.getBlockZ());
+        }
         Location lobby = course.getLobby();
-        sender.sendMessage(ChatColor.DARK_GREEN + " - Lobby location: " + lobby.getBlockX() + " " + lobby.getBlockY() + " " + lobby.getBlockZ());
+        if (lobby == null) {
+            sender.sendMessage(ChatColor.DARK_GREEN + " - Lobby location: Not set");
+        } else {
+            sender.sendMessage(ChatColor.DARK_GREEN + " - Lobby location: " + lobby.getBlockX() + " " + lobby.getBlockY() + " " + lobby.getBlockZ());
+        }
         int time = course.getTime();
         sender.sendMessage(ChatColor.DARK_GREEN + " - Time limit: " + ChatColor.GREEN + Utilities.ConvertSeconds(time));
         int attempts = course.getAttempts();
@@ -88,6 +98,7 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
 
         int time = Utilities.ReadTime(args[2]);
@@ -111,6 +122,7 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
 
         int attempts;
@@ -145,11 +157,12 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
 
         Player player = (Player) sender;
         Course course = Utilities.GetCourse(name);
-        course.setLobby(player.getLocation().getBlock().getLocation());
+        course.setLobby(player.getLocation());
         Utilities.SaveCourse(course);
         sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] The lobby for course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + " has been changed to your current location.");
     }
@@ -167,13 +180,48 @@ public class Commands {
         String name = args[1].toLowerCase();
         if (Utilities.CheckNameAvailable(name)) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
         }
 
         Player player = (Player) sender;
         Course course = Utilities.GetCourse(name);
-        course.setStart(player.getLocation().getBlock().getLocation());
+        course.setStart(player.getLocation());
         Utilities.SaveCourse(course);
         sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] The start for course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + " has been changed to your current location.");
+    }
+
+    static void CommandStart(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Command usage: " + ChatColor.GREEN + "/lockout start <name> <player>");
+            return;
+        }
+
+        String name = args[1].toLowerCase();
+        if (Utilities.CheckNameAvailable(name)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+
+        String playerName = args[2].toLowerCase();
+        Player player = Lockout.plugin.getServer().getPlayer(playerName);
+        if (player == null || !player.isOnline()) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " is not online and can not start the course.");
+            return;
+        }
+
+        if (Utilities.CheckPlayerInCourse(playerName)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " is already in a course.");
+            return;
+        }
+
+        Course course = Utilities.GetCourse(name);
+        if (Utilities.CheckPlayerAttempts(playerName) >= course.getAttempts()) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has reached the maximum number of attempts for that course.");
+            return;
+        }
+
+        Utilities.StartCourseForPlayer(course, player);
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has started course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
     }
 
 
