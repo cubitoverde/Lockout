@@ -19,9 +19,9 @@ public class Clock extends BukkitRunnable {
             int time = config.getInt("Lockout.Players." + playerName + ".Time");
 
             if (time >= 0) {
-                if (time > 120) {
+                if (time > 180) {
                     player.sendTitle(" ", ChatColor.GREEN + Utilities.ConvertSeconds(time), 0, 25, 1);
-                } else if (time > 30) {
+                } else if (time > 60) {
                     player.sendTitle(" ", ChatColor.GOLD + Utilities.ConvertSeconds(time), 0, 25, 1);
                 } else {
                     player.sendTitle(" ", ChatColor.DARK_RED + Utilities.ConvertSeconds(time), 0, 25, 1);

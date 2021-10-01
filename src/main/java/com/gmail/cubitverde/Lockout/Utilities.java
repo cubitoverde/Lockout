@@ -157,7 +157,7 @@ public class Utilities {
 
         String playerName = player.getName();
         String name = course.getName();
-        player.sendMessage(ChatColor.DARK_GREEN + "[Lockout] You are starting course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + " .");
+        player.sendMessage(ChatColor.DARK_GREEN + "[Lockout] You are starting course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
 
         config.set("Lockout.Players." + playerName + ".Course", name);
         if (config.getConfigurationSection("Lockout.Players." + playerName + ".Attempts") == null) {
@@ -181,6 +181,49 @@ public class Utilities {
             int attempts = config.getInt("Lockout.Players." + playerName + ".Attempts");
             return attempts;
         }
+    }
+
+    static Course GetPlayerCourse(String playerName) {
+        FileConfiguration config = Lockout.plugin.getConfig();
+
+        if (config.getString("Lockout.Players." + playerName + ".Course") == null) {
+            return null;
+        } else {
+            String name = config.getString("Lockout.Players." + playerName + ".Course");
+            Course course = GetCourse(name);
+            return course;
+        }
+    }
+
+    static void EndCourseForPlayer(Course course, Player player) {
+        FileConfiguration config = Lockout.plugin.getConfig();
+
+        String playerName = player.getName();
+        String name = course.getName();
+        player.sendMessage(ChatColor.DARK_GREEN + "[Lockout] You have finished course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+
+        int time = config.getInt("Lockout.Players." + playerName + ".Time");
+        config.set("Lockout.Players." + playerName + ".Course", null);
+        config.set("Lockout.Players." + playerName + ".Time", null);
+        player.teleport(course.getLobby());
+        if (course.getScores() == null) {
+            Map<String, Integer> scores = new HashMap<>();
+            scores.put(playerName, time);
+            course.setScores(scores);
+        } else {
+            Map<String, Integer> scores = course.getScores();
+            if (scores.keySet().contains(playerName)) {
+                if (scores.get(playerName) < time) {
+                    scores.put(playerName, time);
+                }
+            } else {
+                scores.put(playerName, time);
+            }
+            course.setScores(scores);
+        }
+
+        SaveCourse(course);
+        Lockout.plugin.saveConfig();
     }
 
 }

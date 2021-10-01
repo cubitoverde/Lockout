@@ -64,6 +64,10 @@ public class Lockout extends JavaPlugin {
                 Commands.CommandStart(sender, args);
                 break;
             }
+            case "end": {
+                Commands.CommandEnd(sender, args);
+                break;
+            }
             default: {
                 Utilities.ShowCommands(sender);
                 break;

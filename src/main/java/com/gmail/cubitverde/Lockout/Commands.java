@@ -217,10 +217,40 @@ public class Commands {
         Course course = Utilities.GetCourse(name);
         if (Utilities.CheckPlayerAttempts(playerName) >= course.getAttempts()) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has reached the maximum number of attempts for that course.");
+            player.sendMessage(ChatColor.DARK_GREEN + "[Lockout] You have reached the maximum number of attempts for that course.");
             return;
         }
 
         Utilities.StartCourseForPlayer(course, player);
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has started course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+    }
+
+    static void CommandEnd(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Command usage: " + ChatColor.GREEN + "/lockout end <player>");
+            return;
+        }
+
+        String playerName = args[1].toLowerCase();
+        Player player = Lockout.plugin.getServer().getPlayer(playerName);
+        if (player == null || !player.isOnline()) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " is not online and can not end the course.");
+            return;
+        }
+
+        if (!Utilities.CheckPlayerInCourse(playerName)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " is not in a course.");
+            return;
+        }
+
+        Course course = Utilities.GetPlayerCourse(playerName);
+        if (course == null) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " is not in a course.");
+            return;
+        }
+        String name = course.getName();
+
+        Utilities.EndCourseForPlayer(course, player);
         sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has started course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
     }
 
