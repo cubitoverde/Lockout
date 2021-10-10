@@ -215,7 +215,7 @@ public class Commands {
         }
 
         Course course = Utilities.GetCourse(name);
-        if (Utilities.CheckPlayerAttempts(playerName) >= course.getAttempts()) {
+        if (Utilities.CheckPlayerAttempts(playerName, course) >= course.getAttempts()) {
             sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has reached the maximum number of attempts for that course.");
             player.sendMessage(ChatColor.DARK_GREEN + "[Lockout] You have reached the maximum number of attempts for that course.");
             return;
@@ -251,7 +251,70 @@ public class Commands {
         String name = course.getName();
 
         Utilities.EndCourseForPlayer(course, player);
-        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has started course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has ended course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+    }
+
+    static void CommandScores(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Command usage: " + ChatColor.GREEN + "/lockout scores <name>");
+            return;
+        }
+
+        String name = args[1].toLowerCase();
+        if (Utilities.CheckNameAvailable(name)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+        Course course = Utilities.GetCourse(name);
+
+        Utilities.ListScores(sender, course);
+    }
+
+    static void CommandRemovescore(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Command usage: " + ChatColor.GREEN + "/lockout removescore <name> <player>");
+            return;
+        }
+
+        String name = args[1].toLowerCase();
+        if (Utilities.CheckNameAvailable(name)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+        Course course = Utilities.GetCourse(name);
+
+        String playerName = args[2].toLowerCase();
+        Map<String, Integer> scores = course.getScores();
+        if (scores == null || !scores.containsKey(playerName)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " has no score in course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+
+        scores.remove(playerName);
+        course.setScores(scores);
+        Utilities.SaveCourse(course);
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + "'s score in course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + " has been removed.");
+    }
+
+    static void CommandRefundattempt(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Command usage: " + ChatColor.GREEN + "/lockout refundattempt <name> <player>");
+            return;
+        }
+
+        String name = args[1].toLowerCase();
+        if (Utilities.CheckNameAvailable(name)) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There is no course named " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+        Course course = Utilities.GetCourse(name);
+
+        String playerName = args[2].toLowerCase();
+        int attempts = Utilities.CheckPlayerAttempts(playerName, course);
+        attempts--;
+        Utilities.SavePlayerAttempts(playerName, course, attempts);
+
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] Player " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " now has " + ChatColor.GREEN + attempts + ChatColor.DARK_GREEN + " attempts in course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
     }
 
 

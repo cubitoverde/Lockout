@@ -68,6 +68,18 @@ public class Lockout extends JavaPlugin {
                 Commands.CommandEnd(sender, args);
                 break;
             }
+            case "scores": {
+                Commands.CommandScores(sender, args);
+                break;
+            }
+            case "removescore": {
+                Commands.CommandRemovescore(sender, args);
+                break;
+            }
+            case "refundattempt": {
+                Commands.CommandRefundattempt(sender, args);
+                break;
+            }
             default: {
                 Utilities.ShowCommands(sender);
                 break;

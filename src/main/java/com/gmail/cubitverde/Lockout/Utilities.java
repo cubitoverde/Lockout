@@ -6,6 +6,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utilities {
     static void ShowCommands(CommandSender sender) {
@@ -26,7 +27,7 @@ public class Utilities {
         sender.sendMessage(ChatColor.GREEN + " /lockout end <player>" + ChatColor.WHITE + " - Successfully makes a player finish the course.");
         sender.sendMessage(ChatColor.GREEN + " /lockout scores <name>" + ChatColor.WHITE + " - List the players that completed a course.");
         sender.sendMessage(ChatColor.GREEN + " /lockout removescore <name> <player>" + ChatColor.WHITE + " - Remove a player's score from a course.");
-        sender.sendMessage(ChatColor.GREEN + " /lockout removeattempt <name> <player>" + ChatColor.WHITE + " - Removes one attempt from a player for a course.");
+        sender.sendMessage(ChatColor.GREEN + " /lockout refundattempt <name> <player>" + ChatColor.WHITE + " - Refunds one attempt from a player for a course.");
         sender.sendMessage(" ");
     }
 
@@ -56,6 +57,7 @@ public class Utilities {
         FileConfiguration config = Lockout.plugin.getConfig();
 
         String name = course.getName();
+        config.set("Lockout.Courses." + name, null);
         config.set("Lockout.Courses." + name + ".Start", course.getStart());
         config.set("Lockout.Courses." + name + ".Lobby", course.getLobby());
         config.set("Lockout.Courses." + name + ".Time", course.getTime());
@@ -161,10 +163,10 @@ public class Utilities {
 
         config.set("Lockout.Players." + playerName + ".Course", name);
         if (config.getConfigurationSection("Lockout.Players." + playerName + ".Attempts") == null) {
-            config.set("Lockout.Players." + playerName + ".Attempts", 1);
+            config.set("Lockout.Players." + playerName + ".Attempts." + name, 1);
         } else {
-            int attempts = config.getInt("Lockout.Players." + playerName + ".Attempts");
-            config.set("Lockout.Players." + playerName + ".Attempts", ++attempts);
+            int attempts = config.getInt("Lockout.Players." + playerName + ".Attempts." + name);
+            config.set("Lockout.Players." + playerName + ".Attempts." + name, ++attempts);
         }
         config.set("Lockout.Players." + playerName + ".Time", course.getTime());
         player.teleport(course.getStart());
@@ -172,13 +174,14 @@ public class Utilities {
         Lockout.plugin.saveConfig();
     }
 
-    static int CheckPlayerAttempts(String playerName) {
+    static int CheckPlayerAttempts(String playerName, Course course) {
         FileConfiguration config = Lockout.plugin.getConfig();
+        String name = course.getName();
 
-        if (config.getString("Lockout.Players." + playerName + ".Attempts") == null) {
+        if (config.getString("Lockout.Players." + playerName + ".Attempts." + name) == null) {
             return 0;
         } else {
-            int attempts = config.getInt("Lockout.Players." + playerName + ".Attempts");
+            int attempts = config.getInt("Lockout.Players." + playerName + ".Attempts." + name);
             return attempts;
         }
     }
@@ -224,6 +227,34 @@ public class Utilities {
 
         SaveCourse(course);
         Lockout.plugin.saveConfig();
+    }
+
+    static void ListScores(CommandSender sender, Course course) {
+        String name = course.getName();
+        Map<String, Integer> scores = course.getScores();
+        if (scores == null || scores.size() == 0) {
+            sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] There are no scores in course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ".");
+            return;
+        }
+
+        sender.sendMessage(" ");
+        sender.sendMessage(ChatColor.DARK_GREEN + "[Lockout] List of scores for course " + ChatColor.GREEN + name + ChatColor.DARK_GREEN + ":");
+        sender.sendMessage(ChatColor.DARK_GREEN + "(Scores are meassured by " + ChatColor.GREEN + "how much time was left" + ChatColor.DARK_GREEN + " when completing the course).");
+        sender.sendMessage(" ");
+
+        Map<String, Integer> sorted = scores.entrySet().stream().sorted(Map.Entry.comparingByValue()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
+
+        for (String playerName : sorted.keySet()) {
+            sender.sendMessage(ChatColor.DARK_GREEN + " - " + ChatColor.GREEN + playerName + ChatColor.DARK_GREEN + " - " + ConvertSeconds(sorted.get(playerName)));
+        }
+        sender.sendMessage(" ");
+    }
+
+    static void SavePlayerAttempts(String playerName, Course course, int attempts) {
+        FileConfiguration config = Lockout.plugin.getConfig();
+        String name = course.getName();
+
+        config.set("Lockout.Players." + playerName + ".Attempts." + name, attempts);
     }
 
 }
